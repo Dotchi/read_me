@@ -16,13 +16,12 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .paths import to_host, to_local
-from .render import doc_title, render_markdown
+from .formats import DOC_EXT, load
 from .speech import speakable
 from .tts import DEFAULT_VOICE, ROOT, TTS
 
 STATIC = Path(__file__).resolve().parent / "static"
 PROGRESS_FILE = ROOT / "data" / "progress.json"
-MD_EXT = {".md", ".markdown", ".mdx"}
 IMG_EXT = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".bmp", ".ico"}
 SKIP_DIRS = {".git", "node_modules", ".venv", "venv", "vendor", "__pycache__", ".next", "dist", "build"}
 
@@ -58,8 +57,8 @@ async def local_only(request: Request, call_next):
 
 def _resolve_md(path: str) -> Path:
     p = to_local(path).resolve()
-    if p.suffix.lower() not in MD_EXT or not p.is_file():
-        raise HTTPException(404, f"Not a Markdown file (or not mounted): {path}")
+    if p.suffix.lower() not in DOC_EXT or not p.is_file():
+        raise HTTPException(404, f"Not a supported document (or not mounted): {path}")
     return p
 
 
@@ -69,15 +68,13 @@ def health():
 
 
 @app.get("/api/doc")
-def get_doc(path: str):
+def get_doc(path: str, start: int = 0):
     p = _resolve_md(path)
-    text = p.read_text(encoding="utf-8", errors="replace")
-    return {
-        "path": to_host(p),
-        "title": doc_title(text, p),
-        "mtime": p.stat().st_mtime,
-        "html": render_markdown(text, p.parent),
-    }
+    try:
+        d = load(p, start)
+    except Exception as e:  # corrupt / encrypted files
+        raise HTTPException(422, f"Could not read {p.name}: {e}")
+    return {"path": to_host(p), "mtime": p.stat().st_mtime, **d}
 
 
 @app.get("/api/mtime")
@@ -95,7 +92,7 @@ def list_files(root: str | None = None):
     for dirpath, dirnames, filenames in os.walk(base):
         dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS and not d.startswith("."))
         for f in sorted(filenames):
-            if Path(f).suffix.lower() in MD_EXT:
+            if Path(f).suffix.lower() in DOC_EXT and not f.startswith("~$"):
                 found.append(to_host(Path(dirpath) / f))
         if len(found) >= 3000:
             truncated = True

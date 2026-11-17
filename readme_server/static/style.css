@@ -109,6 +109,8 @@ main { flex: 1; min-width: 0; padding: 24px 16px 40vh; }
 .doc th, .doc td { border: 1px solid var(--border); padding: 6px 12px; text-align: left; }
 .doc th { background: var(--code-bg); }
 .doc img { max-width: 100%; }
+.doc .page-mark { display: flex; align-items: center; gap: 10px; margin: 2em 0 1em; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.doc .page-mark::after { content: ""; flex: 1; border-top: 1px dashed var(--border); }
 .doc li.task-list-item { list-style: none; }
 .doc li.task-list-item input { margin: 0 .4em 0 -1.4em; }
 .doc [data-line], .doc p, .doc li { cursor: text; }

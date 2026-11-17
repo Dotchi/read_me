@@ -121,8 +121,7 @@ async function openReader(context, uri, { line = null, play = false } = {}) {
   if (!uri) {
     const ed = vscode.window.activeTextEditor;
     if (!ed || ed.document.languageId !== "markdown") {
-      vscode.window.showInformationMessage("Open a Markdown file first.");
-      return;
+      return vscode.commands.executeCommand("readMe.openFile");
     }
     uri = ed.document.uri;
   }
@@ -179,6 +178,14 @@ function activate(context) {
       const ed = vscode.window.activeTextEditor;
       if (!ed) return;
       return openReader(context, ed.document.uri, { line: ed.selection.active.line, play: true });
+    }),
+    vscode.commands.registerCommand("readMe.openFile", async () => {
+      const picked = await vscode.window.showOpenDialog({
+        canSelectMany: false,
+        filters: { Documents: ["pdf", "docx", "txt", "md", "markdown"] },
+        openLabel: "Read aloud",
+      });
+      if (picked && picked[0]) return openReader(context, picked[0]);
     }),
     vscode.commands.registerCommand("readMe.togglePlay", () => panel && panel.webview.postMessage({ type: "toggle" })),
     vscode.commands.registerCommand("readMe.stop", () => panel && panel.webview.postMessage({ type: "stop" })),

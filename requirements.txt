@@ -5,3 +5,5 @@ markdown-it-py
 mdit-py-plugins
 soundfile
 numpy
+pymupdf4llm
+mammoth

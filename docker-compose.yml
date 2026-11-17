@@ -1,5 +1,5 @@
 # docker compose up -d   ->   http://127.0.0.1:8765
-# READ_ME_DOCS (in .env) is the host folder whose Markdown you can read.
+# READ_ME_DOCS / READ_ME_DOCS_2 (in .env) are the host folders whose documents you can read.
 services:
   read_me:
     build: .
@@ -11,9 +11,10 @@ services:
     environment:
       READ_ME_ROOT: /docs
       # host path = container path, so VS Code's Windows paths resolve inside the container
-      READ_ME_PATH_MAP: "${READ_ME_DOCS:-C:/laragon/www}=/docs"
+      READ_ME_PATH_MAP: "${READ_ME_DOCS:-C:/laragon/www}=/docs;${READ_ME_DOCS_2:-C:/Users/Public/Documents}=/docs2"
     volumes:
       - "${READ_ME_DOCS:-C:/laragon/www}:/docs:ro"
+      - "${READ_ME_DOCS_2:-C:/Users/Public/Documents}:/docs2:ro"
       - ./models:/app/models
       - ./cache:/app/cache
       - ./data:/app/data

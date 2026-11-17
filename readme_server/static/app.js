@@ -245,7 +245,8 @@ function updateStatus() {
   document.body.classList.toggle("playing", state.playing);
   $("#btn-play").setAttribute("aria-label", state.playing ? "Pause" : "Play");
   const n = state.items.length;
-  $("#status").textContent = n ? `${state.idx >= 0 ? state.idx + 1 : 0} / ${n}` : "";
+  $("#status").textContent = (n ? `${state.idx >= 0 ? state.idx + 1 : 0} / ${n}` : "") +
+    (state.loadingNote ? ` · ${state.loadingNote}` : "");
 }
 
 // ---------------------------------------------------------------- audio
@@ -306,7 +307,19 @@ async function playFrom(i) {
 audio.addEventListener("ended", () => {
   if (!state.playing) return;
   const it = state.items[state.idx], nx = state.items[state.idx + 1];
-  if (!nx) { state.playing = false; updateStatus(); saveProgress(); toast("End of document"); return; }
+  if (!nx) {
+    if (state.loadingNote && state.more) { // more PDF pages on the way: carry on when they land
+      const tok = state.token;
+      const waitMore = () => {
+        if (tok !== state.token || !state.playing) return;
+        if (state.items[state.idx + 1]) playFrom(state.idx + 1);
+        else if (state.loadingNote) setTimeout(waitMore, 500);
+        else { state.playing = false; updateStatus(); toast("End of document"); }
+      };
+      return waitMore();
+    }
+    state.playing = false; updateStatus(); saveProgress(); toast("End of document"); return;
+  }
   let gap = 0;
   if (it.kind === "heading" || nx.kind === "heading") gap = 380;
   else if (nx.blockEl !== it.blockEl) gap = 160;
@@ -401,6 +414,8 @@ async function loadDoc(path, { line = null, play = false, keep = false } = {}) {
   state.items = buildItems(doc);
   buildToc();
   markActiveFile();
+  state.docGen = (state.docGen || 0) + 1;
+  state.more = d.next_start != null ? loadMore(d.path, d.next_start, d.total_pages, state.docGen) : null;
   if (!EMBED) history.replaceState(null, "", "?path=" + encodeURIComponent(d.path));
 
   if (keep && prev) {
@@ -416,6 +431,28 @@ async function loadDoc(path, { line = null, play = false, keep = false } = {}) {
   } else {
     scrollTo(0, 0); updateStatus(); offerResume();
   }
+}
+
+/** PDFs arrive in page batches: append each batch while the reader keeps going. */
+async function loadMore(path, start, total, gen) {
+  while (start != null && gen === state.docGen) {
+    state.loadingNote = `loading pages ${start + 1}+ of ${total}`;
+    updateStatus();
+    let d;
+    try { d = await (await api(`/api/doc?path=${encodeURIComponent(path)}&start=${start}`)).json(); }
+    catch (e) { toast(e.message, 6000); break; }
+    if (gen !== state.docGen) return;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = d.html;
+    decorate(tmp);
+    $("#doc").append(...tmp.childNodes);
+    // appended at the end, so existing indexes stay valid
+    state.items = buildItems($("#doc"));
+    buildToc();
+    if (state.idx >= 0) show(state.idx, { scroll: false });
+    start = d.next_start;
+  }
+  if (gen === state.docGen) { state.loadingNote = ""; updateStatus(); }
 }
 
 function buildToc() {
@@ -512,7 +549,7 @@ function bindUI() {
       const href = a.getAttribute("href");
       if (/^https?:/i.test(href)) { if (EMBED) { e.preventDefault(); post({ type: "openExternal", url: a.href }); } return; }
       if (href.startsWith("#")) return;
-      if (/\.(md|markdown|mdx)(#.*)?$/i.test(href)) {
+      if (/\.(md|markdown|mdx|pdf|docx|txt)(#.*)?$/i.test(href)) {
         e.preventDefault();
         const dir = state.path.replace(/[\\/][^\\/]*$/, "");
         loadDoc(dir + "/" + decodeURIComponent(href.split("#")[0]));

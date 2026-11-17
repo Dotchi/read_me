@@ -2,7 +2,8 @@
   "name": "read-me-aloud",
   "displayName": "Read Me Aloud",
   "description": "Follow-along read-aloud for Markdown, powered by the local read_me server (Kokoro TTS).",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "repository": { "type": "git", "url": "https://github.com/Dotchi/read_me" },
   "publisher": "local",
   "license": "MIT",
   "engines": { "vscode": "^1.90.0" },
@@ -12,6 +13,7 @@
   "contributes": {
     "commands": [
       { "command": "readMe.open", "title": "Read Me: Open Reader", "icon": "$(unmute)" },
+      { "command": "readMe.openFile", "title": "Read Me: Open PDF, Word or Text File…" },
       { "command": "readMe.readFromCursor", "title": "Read Me: Read Aloud From Cursor" },
       { "command": "readMe.togglePlay", "title": "Read Me: Play / Pause" },
       { "command": "readMe.stop", "title": "Read Me: Stop" }
@@ -22,13 +24,13 @@
     ],
     "menus": {
       "editor/title": [
-        { "command": "readMe.open", "when": "editorLangId == markdown", "group": "navigation" }
+        { "command": "readMe.open", "when": "resourceExtname =~ /^\\.(md|markdown|pdf|docx|txt)$/i", "group": "navigation" }
       ],
       "editor/context": [
         { "command": "readMe.readFromCursor", "when": "editorLangId == markdown", "group": "navigation@9" }
       ],
       "explorer/context": [
-        { "command": "readMe.open", "when": "resourceExtname == .md", "group": "navigation@9" }
+        { "command": "readMe.open", "when": "resourceExtname =~ /^\\.(md|markdown|pdf|docx|txt)$/i", "group": "navigation@9" }
       ]
     },
     "configuration": {
