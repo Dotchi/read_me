@@ -1,0 +1,7 @@
+kokoro-onnx
+fastapi
+uvicorn[standard]
+markdown-it-py
+mdit-py-plugins
+soundfile
+numpy

@@ -1,0 +1,8 @@
+.venv/
+models/
+cache/
+data/
+__pycache__/
+*.vsix
+.env
+.claude/

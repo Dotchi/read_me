@@ -1,0 +1,9 @@
+.venv
+models
+cache
+data
+docs
+vscode-extension
+**/__pycache__
+*.vsix
+.env

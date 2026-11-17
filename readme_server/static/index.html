@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>read_me</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<header class="bar" role="toolbar" aria-label="Reader controls">
+  <button id="btn-side" class="icon" title="Files and contents" aria-label="Toggle sidebar">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <div class="transport">
+    <button id="btn-prev-sec" class="icon" title="Previous section (Shift+←)" aria-label="Previous section">
+      <svg viewBox="0 0 24 24"><path d="M6 5v14M18 6l-8 6 8 6z"/></svg>
+    </button>
+    <button id="btn-prev" class="icon" title="Previous sentence (←)" aria-label="Previous sentence">
+      <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <button id="btn-play" class="icon play" title="Play / pause (Space)" aria-label="Play">
+      <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>
+    </button>
+    <button id="btn-next" class="icon" title="Next sentence (→)" aria-label="Next sentence">
+      <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <button id="btn-next-sec" class="icon" title="Next section (Shift+→)" aria-label="Next section">
+      <svg viewBox="0 0 24 24"><path d="M18 5v14M6 6l8 6-8 6z"/></svg>
+    </button>
+  </div>
+  <label class="speed" title="Speed (+ / −)">
+    <input id="speed" type="range" min="0.7" max="2.5" step="0.1" value="1.2" aria-label="Speed">
+    <output id="speed-val">1.2×</output>
+  </label>
+  <details class="settings">
+    <summary class="icon" title="Settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
+    </summary>
+    <div class="menu">
+      <label>Voice <select id="voice"></select></label>
+      <label class="check"><input type="checkbox" id="opt-code"> Read code line by line</label>
+      <label class="check"><input type="checkbox" id="opt-tables"> Read table rows</label>
+      <label class="check"><input type="checkbox" id="opt-follow"> Auto-scroll to the sentence</label>
+    </div>
+  </details>
+  <span id="status" class="status" aria-live="polite"></span>
+  <button id="btn-resume" class="chip" hidden></button>
+</header>
+
+<div class="layout">
+  <aside id="side" class="side">
+    <section id="files-panel">
+      <h2>Files</h2>
+      <form id="root-form"><input id="root" placeholder="Folder" aria-label="Folder"></form>
+      <input id="filter" placeholder="Filter…" aria-label="Filter files">
+      <ul id="files" class="files"></ul>
+    </section>
+    <section>
+      <h2>Contents</h2>
+      <ul id="toc" class="toc"></ul>
+    </section>
+  </aside>
+  <main>
+    <div id="banner" class="banner" hidden></div>
+    <article id="doc" class="doc">
+      <p class="empty">Open a Markdown file from the sidebar, or pass <code>?path=C:\path\to\file.md</code>.</p>
+    </article>
+  </main>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
